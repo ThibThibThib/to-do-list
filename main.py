@@ -1,20 +1,31 @@
 import sqlite3
 
-
-
+#Création de la to do list
 def todolits():
     try:
+
+
+        #Connexion à la db
+        connection = sqlite3.connect("database.db")
+        cursor = connection.cursor()
+        cursor.execute('''CREATE TABLE IF NOT EXISTS todolist(
+          id_task INTEGER,
+          name_task TEXT, 
+          ''') 
+        connection.commit   
+        
+        #Choix de l'utilisateur parmit les 3 propositions
         print("● Voir vos tâches (1)\n● Ajouter des tâches (2)\n● Supprimer une/toutes tâche(s) (3)\n")
         reponse_qst_start = input()
         print("")
 
-        connection = sqlite3.connect("database.db")
-        cursor = connection.cursor()
+
+        # Demande du choix de la page à l'utilisateur en fin de réponse (1)
         def choix_page():
-            print("Voulez vous changer de page pour voir vos autres task (oui / non)")
+            print("\nVoulez vous changer de page pour voir vos autres task (oui / non)")
             reponse_autre = input()
             if reponse_autre == 'oui':
-                print("Quelle page voulez vous obtenir ? (Page de base = 0)")
+                print("\nQuelle page voulez vous obtenir ? (Page de base = 0)")
                 page_reponse = int(input())
                 print("")
                 page_reponse = page_reponse * 10  
@@ -23,16 +34,16 @@ def todolits():
                 for i in req.fetchall():
                     if i [1]:
                         print(i[1], "         ID :",i[0])
-                
-                choix_page
+                choix_page()
+
             elif reponse_autre == 'non':
                 print("")
             else:
                 print("Réponse invalide")
 
-
+        #Demande du choix de page quand nous souhaitons supprimer un tache et quelle n'est pas dans la bonne page
         def choix_page_mauvaise_endroit():
-            print("Quelle page voulez vous obtenir ? (Page de base = 0)")
+            print("\nQuelle page voulez vous obtenir ? (Page de base = 0)")
             page_reponse = int(input())
             print("")
             page_reponse = page_reponse * 10  
@@ -44,7 +55,7 @@ def todolits():
             supprimer_bonne_page()
 
 
-
+        #Voir les tâches
         if reponse_qst_start == '1' :
             req = cursor.execute('SELECT * FROM todolist LIMIT 10')
 
@@ -54,6 +65,7 @@ def todolits():
 
             choix_page()
 
+        #Ajouter des tâches
         elif reponse_qst_start == '2' :
             print("\nQuelle tâche voulez vous rajouter ?\n")
             name_task = input()
@@ -66,8 +78,19 @@ def todolits():
             )
             connection.commit()
             print("\nVotre tâche à été ajouté.")
+            print("Voulez vous voir vos task ? (oui / non)")
+            reponse_task_ajout = input()
+            if reponse_task_ajout == 'oui':
+                req = cursor.execute('SELECT * FROM todolist LIMIT 10')
 
+                for i in req.fetchall():
+                    if i [1]:
+                        print(i[1], "         ID :",i[0])
+                choix_page()
+            elif reponse_task_ajout == 'non ':
+                pass
 
+        #Supprimer des tâches (une ou toute)            
         elif reponse_qst_start == '3' :
             print("")
             req = cursor.execute('SELECT * FROM todolist LIMIT 10')
@@ -80,7 +103,7 @@ def todolits():
             
             def supprimer_bonne_page() :
                 if reponse_1_2 == '1' :
-                    print("Remarque : Vous devez vous situez dans la page ou votre task est pour pouvoir la supprimer")
+                    print("Remarque : Vous devez vous situez dans la page ou votre task est situé pour pouvoir la supprimer")
                     print("êtes vous dans la bonne page de votre task? (oui / non)")
                     reponse_mauvaise_endroit = input()
                     if reponse_mauvaise_endroit == 'oui':
@@ -108,11 +131,12 @@ def todolits():
         else:
             print("Votre réponse est invalide")
 
+    #Si erreur
     except Exception as e:
         print("[ERREUR]", e)
         connection.rollback
 
-
+    #Fin du programme fermeture de la db
     finally:
         connection.close()
 
