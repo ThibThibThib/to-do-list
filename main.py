@@ -3,22 +3,13 @@ import sqlite3
 #Création de la to do list
 def todolits():
     try:
-
-
         #Connexion à la db
-        connection = sqlite3.connect("database.db")
+        connection = sqlite3.connect("Saisir l'emplacement de votre fichier database.db")
         cursor = connection.cursor()
-        cursor.execute('''CREATE TABLE IF NOT EXISTS todolist(
-          id_task INTEGER,
-          name_task TEXT, 
-          ''') 
-        connection.commit   
-        
+
         #Choix de l'utilisateur parmit les 3 propositions
         print("● Voir vos tâches (1)\n● Ajouter des tâches (2)\n● Supprimer une/toutes tâche(s) (3)\n")
         reponse_qst_start = input()
-        print("")
-
 
         # Demande du choix de la page à l'utilisateur en fin de réponse (1)
         def choix_page():
@@ -54,20 +45,8 @@ def todolits():
                     print(i[1], "         ID :",i[0])
             supprimer_bonne_page()
 
-
-        #Voir les tâches
-        if reponse_qst_start == '1' :
-            req = cursor.execute('SELECT * FROM todolist LIMIT 10')
-
-            for i in req.fetchall():
-                if i [1]:
-                    print(i[1], "         ID :",i[0])
-
-            choix_page()
-
-        #Ajouter des tâches
-        elif reponse_qst_start == '2' :
-            print("\nQuelle tâche voulez vous rajouter ?\n")
+        def ajout_autre_task_def():
+            print("\nVeuillez écrire la task que vous souhaitez ajouter")
             name_task = input()
             cursor.execute(
                 """
@@ -78,7 +57,42 @@ def todolits():
             )
             connection.commit()
             print("\nVotre tâche à été ajouté.")
-            print("Voulez vous voir vos task ? (oui / non)")
+            print("\nVoulez vous voir vos task ? (oui / non)")
+            ajout_autre_task = input()
+            if ajout_autre_task == 'oui':
+                ajout_autre_task_def()
+            elif ajout_autre_task == 'non':
+                pass
+
+        #Voir les tâches
+        if reponse_qst_start == '1' :
+            req = cursor.execute('SELECT * FROM todolist LIMIT 10')
+
+            for i in req.fetchall():
+                if i [1]:
+                    print(i[1], "         ID :",i[0])
+            choix_page()
+
+        #Ajouter des tâches
+        elif reponse_qst_start == '2' :
+            print("\nVeuillez écrire la task que vous souhaitez ajouter")
+            name_task = input()
+            cursor.execute(
+                """
+                INSERT INTO todolist (name_task)
+                VALUES (?)
+                """,
+                (name_task,)
+            )
+            connection.commit()
+            print("\nVotre tâche à été ajouté.")
+            print("\nSouhaitez vous rajouter une autre task ? (oui / non)")
+            ajout_autre_task = input()
+            if ajout_autre_task == 'oui':
+                ajout_autre_task_def()
+            elif ajout_autre_task == 'non':
+                pass
+            print("\nVoulez vous voir vos task ? (oui / non)")
             reponse_task_ajout = input()
             if reponse_task_ajout == 'oui':
                 req = cursor.execute('SELECT * FROM todolist LIMIT 10')
@@ -115,7 +129,7 @@ def todolits():
                     elif reponse_mauvaise_endroit == 'non' :
                         choix_page_mauvaise_endroit()
                 elif reponse_1_2 == '2' :
-                    print("Voulez vous vraiment tout supprimer (oui / non)")
+                    print("\nVoulez vous vraiment tout supprimer (oui / non)")
                     qst_sur = input()
                     if qst_sur=='oui':
                         cursor.execute('DELETE FROM todolist')
@@ -139,6 +153,5 @@ def todolits():
     #Fin du programme fermeture de la db
     finally:
         connection.close()
-
 
 todolits()
